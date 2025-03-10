@@ -4,7 +4,7 @@ import {
     FastifyReply,
     FastifyRequest,
   } from 'fastify';
-import { ERROR_CODES } from 'src/errors/errors';
+import { ERROR_CODES } from 'src/errors/errors.js';
   
   export function errorPlugin(
     fastify: FastifyInstance,
@@ -18,7 +18,7 @@ import { ERROR_CODES } from 'src/errors/errors';
         }
   
         if (error.code === ERROR_CODES.COULD_NOT_CREATE) {
-          return reply.code(404).send({ error: error.message, code: error.code });
+          return reply.code(422).send({ error: error.message, code: error.code });
         }
   
         if (error.code === ERROR_CODES.INTERNAL_SERVER_ERROR) {
@@ -26,7 +26,7 @@ import { ERROR_CODES } from 'src/errors/errors';
         }
   
         if (error.code === ERROR_CODES.COULD_NOT_UPDATE) {
-          return reply.code(401).send({ error: error.message, code: error.code });
+          return reply.code(422).send({ error: error.message, code: error.code });
         }
   
         console.error(error);

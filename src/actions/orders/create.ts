@@ -1,7 +1,6 @@
-import { FastifyReply, FastifyRequest } from "fastify";
-import { UniqueViolationError } from "objection";
-import { CouldNotCreate, ERROR_CODES } from "src/errors/errors";
-import { Order, OrderItem, Product } from "src/models";
+import { FastifyReply, FastifyRequest } from 'fastify';
+import { CouldNotCreate, ERROR_CODES } from 'src/errors/errors';
+import { Order, OrderItem, Product } from 'src/models';
 
 type Request = FastifyRequest<{
   Body: {
