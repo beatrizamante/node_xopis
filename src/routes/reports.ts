@@ -1,8 +1,9 @@
 import { FastifyInstance } from 'fastify';
-import reportFetch from '../actions/products/fetch';
+import fetchSales from '../actions/reports/fetchSales';
+import fetchTopProducts from '../actions/reports/fetchTopProducts';
 
 export default async function reportsRoutes(server: FastifyInstance) {
-  server.get('/sales', reportFetch);
-  server.get('/top-products', reportFetch);
+  server.get('/sales', fetchSales);
+  server.get('/top-products', fetchTopProducts);
 
 }
