@@ -9,16 +9,16 @@ export async function getSalesReports(
   const query = OrderItem.query()
     .select([
       raw('DATE(orders.created_at) as date'),
-      'order_items.product_id',
-      raw('SUM(order_items.paid) as total_sold'),
+      'orders_items.product_id',
+      raw('SUM(orders_items.paid) as total_sold'),
     ])
-    .join('order', 'orders.id', 'order_items.order_id')
+    .join('order', 'orders.id', 'orders_items.order_id')
     .whereBetween('orders.created_at', [startDate, endDate])
-    .groupBy('date', 'order_items.product_id')
+    .groupBy('date', 'orders_items.product_id')
     .orderBy('date', 'asc');
 
   if (productId) {
-    query.where('order_items.product_id', productId);
+    query.where('orders_items.product_id', productId);
   }
 
   return query;
@@ -31,18 +31,18 @@ export async function getTopProductReport(
 ) {
   const query = OrderItem.query()
     .select([
-      'order_items.product_id',
-      raw('COUNT(order_items.order_id) as total_purchases'),
+      'orders_items.product_id',
+      raw('COUNT(orders_items.order_id) as total_purchases'),
     ])
-    .join('orders', 'orders.id', 'order_items.order_id')
+    .join('orders', 'orders.id', 'orders_items.order_id')
     .whereBetween('orders.created_at', [startDate, endDate])
-    .groupBy('order_items.product_id')
+    .groupBy('orders_items.product_id')
     .orderBy('total_purchases', 'desc');
 
   if (breakdown) {
     query
       .select(raw('DATE(orders.created_at) as DATE'))
-      .groupBy('date', 'order_items.product_id');
+      .groupBy('date', 'orders_items.product_id');
   }
 
   return query;
