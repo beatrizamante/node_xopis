@@ -12,7 +12,7 @@ export async function getSalesReports(
       'orders_items.product_id',
       raw('SUM(orders_items.paid) as total_sold'),
     ])
-    .join('order', 'orders.id', 'orders_items.order_id')
+    .join('orders', 'orders.id', 'orders_items.order_id')
     .whereBetween('orders.created_at', [startDate, endDate])
     .groupBy('date', 'orders_items.product_id')
     .orderBy('date', 'asc');
