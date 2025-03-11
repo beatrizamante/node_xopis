@@ -7,13 +7,7 @@ async function startServer() {
     await knex.raw('SELECT 1');
 
     console.log('Database connected successfully!');
-    
-    console.log('Running migrations...');
-    await knex.migrate.latest(); 
-    
-    console.log('Running seeds...');
-    await knex.seed.run(); 
-    
+
     server.listen({ port: 8080 }, (err, address) => {
       if (err) {
         console.error(err);
