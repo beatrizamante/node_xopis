@@ -2,9 +2,12 @@ import type { Knex } from 'knex';
 
 const config: Record<string, Knex.Config> = {
   development: {
-    client: 'sqlite3',
+    client: 'postgresql',
     connection: {
-      filename: './dev.sqlite3'
+      host: 'localhost',
+      user: 'postgres',
+      password: 'abc123',
+      database: 'node_xopis_dev'
     },
     migrations: {
       tableName: 'knex_migrations',
@@ -13,12 +16,14 @@ const config: Record<string, Knex.Config> = {
     seeds: {
       directory: './db/seeds',
     },
-    useNullAsDefault: true,
   },
   test: {
-    client: 'sqlite3',
+    client: 'postgresql',
     connection: {
-      filename: ':memory:'
+      host: 'localhost',
+      user: 'postgres',
+      password: 'abc123',
+      database: 'test'
     },
     migrations: {
       tableName: 'knex_migrations',
@@ -27,7 +32,6 @@ const config: Record<string, Knex.Config> = {
     seeds: {
       directory: './db/seeds',
     },
-    useNullAsDefault: true,
   },
 };
 

@@ -1,6 +1,5 @@
+import { User } from '../../../src/models/User';
 import 'tests/setup';
-import server from 'src/server';
-import User from 'src/models/User';
 
 describe('LIST action', () => {
   describe("when there's no users in the database", () => {

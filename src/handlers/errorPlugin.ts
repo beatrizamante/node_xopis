@@ -4,7 +4,7 @@ import {
     FastifyReply,
     FastifyRequest,
   } from 'fastify';
-import { ERROR_CODES } from 'src/errors/errors.js';
+import { ERROR_CODES } from '../errors/errors';
   
   export function errorPlugin(
     fastify: FastifyInstance,

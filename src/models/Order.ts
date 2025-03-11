@@ -61,7 +61,7 @@ class Order extends Model {
         modelClass: OrderItem,
         join: {
           from: 'orders.id',
-          to: 'order_items.order_id',
+          to: 'orders_items.order_id',
         }
       },
       products: {
@@ -70,8 +70,8 @@ class Order extends Model {
         join: {
           from: 'orders.id',
           through: {
-            from: 'order_items.order_id',
-            to: 'order_items.product_id',
+            from: 'orders_items.order_id',
+            to: 'orders_items.product_id',
           },
           to: 'products.id',
         }

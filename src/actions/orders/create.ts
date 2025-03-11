@@ -1,6 +1,6 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { CouldNotCreate, ERROR_CODES } from 'src/errors/errors';
-import { Order, OrderItem, Product } from 'src/models';
+import { Order, OrderItem, OrderStatus, Product } from '../../models';
+import { CouldNotCreate, ERROR_CODES } from '../../errors/errors';
 
 type Request = FastifyRequest<{
   Body: {
@@ -33,7 +33,7 @@ export default async (
             total_discount: totalDiscount as number,
             total_shipping: 0,
             total_tax: 0,
-            status: 'payment_pending',
+            status: OrderStatus.PaymentPending,
           });          
 
           const orderItem = items.map((item) => ({
