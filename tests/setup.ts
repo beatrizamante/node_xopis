@@ -1,4 +1,4 @@
-import knex from 'src/db';
+import knex from '../src/db';
 
 beforeAll(async () => {
   await knex.migrate.latest();

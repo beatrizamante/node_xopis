@@ -1,15 +1,18 @@
 import 'tests/setup';
 import server from '../../../src/server';
-import Product from '../../../src/models/Product';
+import Order, { OrderStatus } from '../../../src/models/Order';
+import OrderItem from '../../../src/models/OrderItem';
+
 import { LightMyRequestResponse } from 'fastify';
 
 describe('CREATE action', () => {
-  const validInput: Partial<Product> = {
-    name: 'Beach Ball',
-    sku: 'BCHBLL',
-    description: 'A fun and colorful beach ball.',
-    price: 2.99,
-    stock: 100,
+  const validInput: Partial<Order> = {
+    customer_id: 1,
+    total_paid: 98.88,
+    total_tax: 0,
+    total_shipping: 0,
+    total_discount: 2,
+    status: OrderStatus.PaymentPending,
   };
 
   describe('when the input is valid', () => {
@@ -160,17 +163,17 @@ describe('CREATE action', () => {
     });
   });
 
-  const makeRequest = async (input: Partial<Product>) =>
+  const makeRequest = async (input: Partial<Order>) =>
     server.inject({
       method: 'POST',
-      url: '/products',
+      url: '/orders',
       body: input,
     });
 
-  const countRecords = async (input: Partial<Product>) =>
-    Product.query().where(input).resultSize();
+  const countRecords = async (input: Partial<Order>) =>
+    Order.query().where(input).resultSize();
 
-  const assertCount = async (input: Partial<Product>, { changedBy }: { changedBy: number }) => {
+  const assertCount = async (input: Partial<Order>, { changedBy }: { changedBy: number }) => {
     const initialCount = await countRecords(input);
 
     await makeRequest(input);

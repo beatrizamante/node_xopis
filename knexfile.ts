@@ -9,6 +9,8 @@ const config: Record<string, Knex.Config> = {
       password: 'abc123',
       database: 'node_xopis_dev'
     },
+    debug: true,
+
     migrations: {
       tableName: 'knex_migrations',
       directory: './db/migrations',
@@ -25,6 +27,8 @@ const config: Record<string, Knex.Config> = {
       password: 'abc123',
       database: 'test'
     },
+    debug: true,
+    
     migrations: {
       tableName: 'knex_migrations',
       directory: './db/migrations',
