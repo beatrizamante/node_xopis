@@ -1,6 +1,6 @@
 import 'tests/setup';
-import server from 'src/server';
-import User from 'src/models/User';
+import server from '../../../src/server';
+import User from '../../../src/models/User';
 
 describe('FETCH action', () => {
   describe('when the user is found', () => {
