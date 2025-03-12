@@ -12,7 +12,6 @@ async function startServer() {
     const result = await knex.raw('SELECT current_database()');
     console.log('Banco de dados atual:', result.rows[0].current_database);
 
-
     await server.listen({ port: Number(PORT) });
     console.log(`Server listening at http://localhost:${PORT}`);
   } catch (error) {
