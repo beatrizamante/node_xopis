@@ -5,7 +5,6 @@ import { createOrder } from '../../services/orderServices';
 export default async (
   request: FastifyRequest<{
     Body: {
-      id?: number;
       customer_id: number;
       items: { product_id: number; quantity: number; discount?: number }[];
     };

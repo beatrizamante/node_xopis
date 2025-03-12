@@ -1,23 +1,21 @@
 import 'tests/setup';
 import server from '../../../src/server';
-import Order, { OrderStatus } from '../../../src/models/Order';
+import Order from '../../../src/models/Order';
 import OrderItem from '../../../src/models/OrderItem';
 
 import { LightMyRequestResponse } from 'fastify';
 
 describe('CREATE action', () => {
-  const validInput: Partial<Order> = {
+  const validInput = {
     customer_id: 1,
-    total_paid: 98.88,
-    total_tax: 0,
-    total_shipping: 0,
-    total_discount: 2,
-    status: OrderStatus.PaymentPending,
+    items: [
+      { product_id: 1, quantity: 2, discount: 5 },
+      { product_id: 2, quantity: 1 },
+    ],
   };
 
   describe('when the input is valid', () => {
     const input = validInput;
-
     it('is successful', async () => {
       const response = await makeRequest(input);
 
@@ -25,56 +23,36 @@ describe('CREATE action', () => {
     });
 
     it('creates a new record', async () => {
-      await assertCount(input, { changedBy: 1 });
+        await assertCount(Order, { customer_id: validInput.customer_id }, { changedBy: 1 });
     });
 
-    it('returns the created user', async () => {
+    it('creates order items', async () => {
       const response = await makeRequest(input);
-
-      const jsonResponse = response.json<Product>();
-      expect(jsonResponse).toEqual(
-        expect.objectContaining({
-          id: expect.any(Number),
-          name: input.name,
-          description: input.description,
-          price: input.price,
-          stock: input.stock,
-        })
-      );
+        const order = await Order.query().findById(response.json().id);
+        const items = await OrderItem.query().where('order_id', order?.id);
+        expect(items.length).toBe(validInput.items.length);
     });
   });
 
-  describe('when the name is missing', () => {
-    const { name, ...input } = validInput;
-
-    it('does not create a new record', async () => {
-      await assertCount(input, { changedBy: 0 });
+  describe('when the customer_id is missing', () => {
+    const { customer_id, ...input } = validInput;
+    it('returns bad request response', async () => {
+      const response = await makeRequest(input);
+      await assertBadRequest(response, /must have required property 'customer_id'/);
     });
+  });
+
+  describe('when items is missing', () => {
+    const { items, ...input } = validInput;
 
     it('returns a bad request response', async () => {
       const response = await makeRequest(input);
-
-      await assertBadRequest(response, /must have required property 'name'/);
+      await assertBadRequest(response, /must have required property 'items'/);
     });
   });
 
-  describe('when the sku is missing', () => {
-    const { sku, ...input } = validInput;
-
-    it('does not create a new record', async () => {
-      await assertCount(input, { changedBy: 0 });
-    });
-
-    it('returns a bad request response', async () => {
-      const response = await makeRequest(input);
-
-      await assertBadRequest(response, /must have required property 'sku'/);
-    });
-  });
-
-  describe('when the sku is already taken', () => {
-    const input = validInput;
-
+  describe('when an item has an invalid product_id', () => {
+    const input = { ...validInput, items: [{ product_id: 115145631141546, quantity: 1 }] };
     beforeEach(async () => {
       const response = await makeRequest({ ...input, name: 'Super Beach Ball' });
 
@@ -163,23 +141,17 @@ describe('CREATE action', () => {
     });
   });
 
-  const makeRequest = async (input: Partial<Order>) =>
+  const makeRequest = async (input: Order) =>
     server.inject({
       method: 'POST',
       url: '/orders',
       body: input,
     });
 
-  const countRecords = async (input: Partial<Order>) =>
-    Order.query().where(input).resultSize();
-
-  const assertCount = async (input: Partial<Order>, { changedBy }: { changedBy: number }) => {
-    const initialCount = await countRecords(input);
-
-    await makeRequest(input);
-
-    const finalCount = await countRecords(input);
-
+  const assertCount =  async (model, where, { changedBy })  => {
+    const initialCount = await model.query().where(where).resultSize();
+    await makeRequest(where);
+    const finalCount = await model.query().where(where).resultSize();
     expect(finalCount).toBe(initialCount + changedBy);
   };
 
@@ -187,5 +159,5 @@ describe('CREATE action', () => {
     const json_response = response.json<{ message: string }>();
     expect(response.statusCode).toBe(400);
     expect(json_response.message).toMatch(message);
-  };
+  };    
 });
