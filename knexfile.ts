@@ -19,6 +19,7 @@ const config: Record<string, Knex.Config> = {
       directory: './db/seeds',
     },
   },
+  
   test: {
     client: 'postgresql',
     connection: {
