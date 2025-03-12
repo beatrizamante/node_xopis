@@ -1,3 +1,10 @@
+export const ERROR_CODES = {
+  BAD_REQUEST: 'BAD_REQUEST',
+  COULD_NOT_CREATE: 'COULD NOT CREATE',
+  INTERNAL_SERVER_ERROR: 'INTERNAL_SERVER_ERROR',
+  COULD_NOT_UPDATE: 'COULD NOT UPDATE',
+};
+
 export class BaseError extends Error {
   code: string;
   error: string;
@@ -8,4 +15,8 @@ export class BaseError extends Error {
   }
 }
 
-export class BadRequestError extends BaseError {}
+export class CouldNotCreate extends BaseError {}
+
+export class InternalServerError extends BaseError {}
+
+export class CouldNotUpdate extends BaseError {}
