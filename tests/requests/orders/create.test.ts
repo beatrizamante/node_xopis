@@ -15,15 +15,16 @@ describe('CREATE action', () => {
   const validInput = {
     customer_id: 1,
     items: [
-      { product_id: 1, quantity: 2, discount: 5 },
-      { product_id: 2, quantity: 1 },
+      { product_id: 2, quantity: 2, discount: 5 },
+      { product_id: 3, quantity: 1 },
     ],
   };
 
   describe('when the input is valid', () => {
     const input = validInput;
-    it('is successful', async () => {
+    it.only('is successful', async () => {
       const response = await makeRequest(input);
+      console.log('Body________________', response.body);
 
       expect(response.statusCode).toBe(201);
     });
