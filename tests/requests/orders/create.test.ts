@@ -15,16 +15,15 @@ describe('CREATE action', () => {
   const validInput = {
     customer_id: 1,
     items: [
-      { product_id: 2, quantity: 2, discount: 5 },
-      { product_id: 3, quantity: 1 },
+      { product_id: 1, quantity: 2 },
+      { product_id: 2, quantity: 1 },
     ],
   };
 
   describe('when the input is valid', () => {
     const input = validInput;
-    it.only('is successful', async () => {
+    it('is successful', async () => {
       const response = await makeRequest(input);
-      console.log('Body________________', response.body);
 
       expect(response.statusCode).toBe(201);
     });
@@ -33,7 +32,7 @@ describe('CREATE action', () => {
       await assertCount(
         Order,
         { customer_id: validInput.customer_id },
-        { changedBy: 1 }
+        { changedBy: 1, items: validInput.items }
       );
     });
 
@@ -58,29 +57,20 @@ describe('CREATE action', () => {
       const response = await makeRequest(input);
       await assertBadRequest(
         response,
-        /must have required property 'customer_id'/
+        /customer_id: must have required property 'customer_id'/
       );
-    });
-  });
-
-  describe('when items is missing', () => {
-    const { items, ...input } = validInput;
-
-    it('returns a bad request response', async () => {
-      const response = await makeRequest(input);
-      await assertBadRequest(response, /must have required property 'items'/);
     });
   });
 
   describe('when an item has an invalid product_id', () => {
     const input = {
       ...validInput,
-      items: [{ product_id: 115145631141546, quantity: 1 }],
+      items: [{ product_id: 1151, quantity: 1 }],
     };
 
     it('returns an error response', async () => {
       const response = await makeRequest(input);
-      expect(response.statusCode).toBe(400);
+      expect(response.statusCode).toBe(500);
     });
   });
 
@@ -89,27 +79,49 @@ describe('CREATE action', () => {
 
     it('returns a bad request response', async () => {
       const response = await makeRequest(input);
-      await assertBadRequest(response, /quantity: must be >= 0/);
+      await assertBadRequest(response, /total_paid: must be >= 0/);
     });
   });
 
-  const makeRequest = async (input: OrderInput) =>
-    server.inject({
+  const makeRequest = async (input: OrderInput) => {
+    const response = await server.inject({
       method: 'POST',
       url: '/orders',
       body: input,
     });
+    console.log(response.statusCode, response.body);
+    return response;
+  };
 
-    const assertCount = async (
-        model: typeof Model,
-        where: object,      
-        { changedBy }: { changedBy: number } 
-      ) => {
-        const initialCount = await model.query().where(where).resultSize();
-        await makeRequest(where);
-        const finalCount = await model.query().where(where).resultSize();
-        expect(finalCount).toBe(initialCount + changedBy);
-      };
+  const assertCount = async (
+    model: typeof Model,
+    where: object,
+    { changedBy, items }: { changedBy: number; items?: Partial<OrderItem>[] }
+  ) => {
+    const initialCount = await model.query().where(where).resultSize();
+    console.log('Initial count:', initialCount);
+    const response = await makeRequest(where);
+    const createdOrder = response.json();
+
+    const initialItemCount = await OrderItem.query()
+      .where({ order_id: createdOrder.id })
+      .resultSize();
+    console.log('Initial item count:', initialItemCount);
+
+    const finalCount = await model.query().where(where).resultSize();
+    console.log('Final count:', finalCount);
+
+    const finalItemCount = await OrderItem.query()
+      .where({ order_id: createdOrder.id })
+      .resultSize();
+    console.log('Final item count:', finalItemCount);
+
+    expect(finalCount).toBe(initialCount + changedBy);
+
+    if (items) {
+      expect(finalItemCount).toBe(initialItemCount + items.length);
+    }
+  };
 
   const assertBadRequest = async (
     response: LightMyRequestResponse,

@@ -1,3 +1,4 @@
+import { CouldNotCreate, ERROR_CODES } from '../errors/errors';
 import { Order, OrderItem, OrderStatus, Product } from '../models';
 
 interface OrderItemData {
@@ -16,8 +17,8 @@ export async function createOrder(data: OrderData): Promise<Order> {
   const { customer_id, items } = data;
 
   const trx = await Order.startTransaction();
-
-  try {
+    
+    try {
     const productPrices = await getProductPrices(items, trx);
     const totalPaid = calculateTotalPaid(items, productPrices);
     const totalDiscount = calculateTotalDiscound(items);
