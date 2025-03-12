@@ -4,6 +4,7 @@ import Order from '../../../src/models/Order';
 import OrderItem from '../../../src/models/OrderItem';
 
 import { LightMyRequestResponse } from 'fastify';
+import { Model } from 'objection';
 
 interface OrderInput {
   customer_id?: number;
@@ -98,12 +99,16 @@ describe('CREATE action', () => {
       body: input,
     });
 
-  const assertCount = async (model, where, { changedBy }) => {
-    const initialCount = await model.query().where(where).resultSize();
-    await makeRequest(where);
-    const finalCount = await model.query().where(where).resultSize();
-    expect(finalCount).toBe(initialCount + changedBy);
-  };
+    const assertCount = async (
+        model: typeof Model,
+        where: object,      
+        { changedBy }: { changedBy: number } 
+      ) => {
+        const initialCount = await model.query().where(where).resultSize();
+        await makeRequest(where);
+        const finalCount = await model.query().where(where).resultSize();
+        expect(finalCount).toBe(initialCount + changedBy);
+      };
 
   const assertBadRequest = async (
     response: LightMyRequestResponse,
