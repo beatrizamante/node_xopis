@@ -24,8 +24,8 @@ export async function createOrder(data: OrderData) {
 
     const order = await Order.query(trx).insert({
       customer_id,
-      total_paid: totalPaid as number,
-      total_discount: totalDiscount as number,
+      total_paid: totalPaid,
+      total_discount: totalDiscount,
       total_shipping: 0,
       total_tax: 0,
       status: OrderStatus.PaymentPending,
