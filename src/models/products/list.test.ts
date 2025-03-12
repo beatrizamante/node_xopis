@@ -1,6 +1,6 @@
 import 'tests/setup';
-import server from 'src/server';
-import Product from 'src/models/Product';
+import server from '../../server';
+import Product from '../Product';
 
 describe('LIST action', () => {
   describe("when there's no products in the database", () => {

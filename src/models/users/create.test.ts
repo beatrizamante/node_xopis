@@ -1,6 +1,6 @@
 import 'tests/setup';
-import server from 'src/server';
-import User from 'src/models/User';
+import server from '../../server';
+import User from '../User';
 import { LightMyRequestResponse } from 'fastify';
 
 describe('CREATE action', () => {
