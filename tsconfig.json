@@ -15,5 +15,5 @@
   },
   "include": [
     "src/**/*"
-  ]
+, "tests/requests/users", "tests/requests/products"  ]
 }

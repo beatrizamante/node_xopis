@@ -1,15 +1,25 @@
 import 'tests/setup';
 import server from '../../../src/server';
-import Order from '../../../src/models/Order';
+import Order, { OrderStatus } from '../../../src/models/Order';
 import OrderItem from '../../../src/models/OrderItem';
 
 import { LightMyRequestResponse } from 'fastify';
 import { Model } from 'objection';
 
 interface OrderInput {
+  id?: number;
   customer_id?: number;
   items?: { product_id: number; quantity: number; discount?: number }[];
 }
+
+jest.mock('../models');
+jest.mock('../services/orderService', () => ({
+  ...jest.requireActual('../services/orderService'),
+  getProductPrices: jest.fn(),
+  calculateTotalPaid: jest.fn(),
+  calculateTotalDiscound: jest.fn(),
+  insertOrderItems: jest.fn(),
+}));
 
 describe('CREATE action', () => {
   const validInput = {
@@ -29,13 +39,13 @@ describe('CREATE action', () => {
     });
 
     it('creates a new record', async () => {
-      await assertCount(
-        Order,
-        { customer_id: validInput.customer_id },
-        { changedBy: 1, items: validInput.items }
-      );
-    });
-
+        await assertCount(
+          Order,
+          { customer_id: validInput.customer_id },
+          { changedBy: 1, items: validInput.items } 
+        );
+      });
+      
     it('creates order items', async () => {
       const response = await makeRequest(input);
 
@@ -83,6 +93,67 @@ describe('CREATE action', () => {
     });
   });
 
+  describe('UPDATE action', () => {
+    const existingOrder = {
+      id: 1,
+      customer_id: 1,
+      status: OrderStatus.PaymentPending,
+      total_paid: 100,
+      total_discount: 10,
+    };
+  
+    const updateInput = {
+      id: 1,
+      customer_id: 2,
+      items: [{ product_id: 1, quantity: 3 }],
+    };
+  
+    beforeEach(async () => {
+      await Order.query().insert(existingOrder);
+      await OrderItem.query().insert([
+        { order_id: 1, product_id: 1, quantity: 2 },
+      ]);
+    });
+  
+    it('updates an existing order successfully', async () => {
+      const response = await makeRequest(updateInput);
+      expect(response.statusCode).toBe(200);
+  
+      const updatedOrder = await Order.query().findById(updateInput.id);
+      expect(updatedOrder?.customer_id).toBe(updateInput.customer_id);
+    });
+  
+    it('returns an error if order does not exist', async () => {
+      const response = await makeRequest({ ...updateInput, id: 999 });
+      expect(response.statusCode).toBe(500);
+    });
+  
+    it('returns an error if order status is not PaymentPending', async () => {
+      await Order.query().patchAndFetchById(existingOrder.id, {
+        status: OrderStatus.Shipped,
+      });
+  
+      const response = await makeRequest(updateInput);
+      expect(response.statusCode).toBe(500);
+    });
+  
+    it('removes all items when items array is empty', async () => {
+      const response = await makeRequest({ ...updateInput, items: [] });
+      expect(response.statusCode).toBe(200);
+  
+      const updatedItems = await OrderItem.query().where('order_id', updateInput.id);
+      expect(updatedItems.length).toBe(0);
+    });
+  
+    const makeRequest = async (input: OrderInput) => {
+      return await server.inject({
+        method: 'PUT',
+        url: '/orders',
+        body: input,
+      });
+    };
+  });
+
   const makeRequest = async (input: OrderInput) => {
     const response = await server.inject({
       method: 'POST',
@@ -96,31 +167,27 @@ describe('CREATE action', () => {
   const assertCount = async (
     model: typeof Model,
     where: object,
-    { changedBy, items }: { changedBy: number; items?: Partial<OrderItem>[] }
+    { changedBy, items }: { changedBy: number, items?: Partial<OrderItem>[] }
   ) => {
     const initialCount = await model.query().where(where).resultSize();
     console.log('Initial count:', initialCount);
     const response = await makeRequest(where);
     const createdOrder = response.json();
 
-    const initialItemCount = await OrderItem.query()
-      .where({ order_id: createdOrder.id })
-      .resultSize();
-    console.log('Initial item count:', initialItemCount);
+   const initialItemCount = await OrderItem.query().where({ order_id: createdOrder.id }).resultSize();
+  console.log('Initial item count:', initialItemCount);
 
-    const finalCount = await model.query().where(where).resultSize();
-    console.log('Final count:', finalCount);
+  const finalCount = await model.query().where(where).resultSize();
+  console.log('Final count:', finalCount);
 
-    const finalItemCount = await OrderItem.query()
-      .where({ order_id: createdOrder.id })
-      .resultSize();
-    console.log('Final item count:', finalItemCount);
+  const finalItemCount = await OrderItem.query().where({ order_id: createdOrder.id }).resultSize();
+  console.log('Final item count:', finalItemCount);
 
-    expect(finalCount).toBe(initialCount + changedBy);
+  expect(finalCount).toBe(initialCount + changedBy);
 
-    if (items) {
-      expect(finalItemCount).toBe(initialItemCount + items.length);
-    }
+  if (items) {
+    expect(finalItemCount).toBe(initialItemCount + items.length);
+  }
   };
 
   const assertBadRequest = async (
