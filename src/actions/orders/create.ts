@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
-import { CouldNotCreate, ERROR_CODES } from '../../errors/errors';
+import { CouldNotCreateError, ERROR_CODES } from '../../errors/errors';
 import { upsertOrder } from '../../services/orderServices';
 
 export default async (
@@ -16,8 +16,8 @@ export default async (
     const order = await upsertOrder(request.body);
     return reply.code(201).send(order);
   } catch (error) {
-    if (error instanceof CouldNotCreate)
-      throw new CouldNotCreate(
+    if (error instanceof CouldNotCreateError)
+      throw new CouldNotCreateError(
         ERROR_CODES.COULD_NOT_CREATE,
         'Error inserting data.'
       );
