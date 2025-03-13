@@ -1,11 +1,23 @@
 {
   "extends": "@tsconfig/node22/tsconfig.json",
   "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "src/*": [
-        "src/*"
-      ]
-    }
-  }
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "strict": true,
+    "resolveJsonModule": true,
+    "allowJs": true,
+    "jsx": "react"
+  },
+  "include": [
+    "src/**/*"
+<<<<<<< Updated upstream
+  ]
+=======
+, "src/temp_tests/users", "src/temp_tests/products"  ]
+>>>>>>> Stashed changes
 }

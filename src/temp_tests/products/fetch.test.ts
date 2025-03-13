@@ -1,6 +1,6 @@
 import 'tests/setup';
-import server from 'src/server';
-import Product from 'src/models/Product';
+import server from '../../server';
+import Product from '../../models/Product';
 
 describe('FETCH action', () => {
   const validInput: Partial<Product> = {

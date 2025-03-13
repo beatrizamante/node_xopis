@@ -9,6 +9,11 @@ const config: Config = {
     '^src/(.*)$': '<rootDir>/src/$1',
     '^tests/(.*)$': '<rootDir>/tests/$1'
   },
+  transform: {
+    '^.+\\.(t|j)s$': ['ts-jest', {
+      useESM: true, 
+    }],
+  },
 };
 
 export default config;
