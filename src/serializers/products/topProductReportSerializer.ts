@@ -1,9 +1,9 @@
 import { TopProductReport } from '../../interfaces/reports';
 
-export function serializerTopProductsReport(results: TopProductReport[]) {
+export function serializerTopProductsReport(results: TopProductReport[], breakdown: boolean) {
   return results.map((row) => ({
     product_id: row.product_id,
     total_purchases: row.total_purchases,
-    ...(row.date && { date: row.date }),
+    ...(breakdown && { date: row.date }),
   }));
 }

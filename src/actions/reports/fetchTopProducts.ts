@@ -15,12 +15,14 @@ type RequestProducts = FastifyRequest<{
     reply: FastifyReply
 ) => {
     try {
-        const productsData = await getTopProductReport(start_date, end_date, breakdown);
+        const parsedBreakdown = breakdown ?? false; 
 
-        const serializedDate = serializerTopProductsReport(productsData, breakdown ?? false);
+        const productsData = await getTopProductReport({ start_date, end_date, breakdown: parsedBreakdown });
+
+        const serializedDate = serializerTopProductsReport(productsData, parsedBreakdown);
 
         return reply.status(200).send(serializedDate);
     } catch(error) {
-        return reply.status(500).send({ error: `An error occurred while fetching the sales report: ${error}` });
+        return reply.status(500).send({ error: `An error occurred while fetching the sales  report: ${error}` });
       }
 };

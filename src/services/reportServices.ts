@@ -9,6 +9,12 @@ interface SalesReportParams {
   product_id?: number;
 }
 
+interface TopProductsReportParams {
+  start_date: string;
+  end_date: string;
+  breakdown?: boolean;
+}
+
 export async function getSalesReports({
   start_date,
   end_date,
@@ -38,11 +44,11 @@ export async function getSalesReports({
   return query.castTo<SalesReport[]>().execute();
 }
 
-export async function getTopProductReport(
-  start_date: string,
-  end_date: string,
-  breakdown?: boolean
-): Promise<TopProductReport[]> {
+export async function getTopProductReport({
+  start_date,
+  end_date,
+  breakdown,
+}: TopProductsReportParams): Promise<TopProductReport[]> {
   if (!start_date || !end_date)
     throw new CouldNotGetReport(
       ERROR_CODES.COULD_NOT_GET_REPORT,
