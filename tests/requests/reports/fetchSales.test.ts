@@ -36,6 +36,8 @@ describe('Sales Reports', () => {
         start_date: startDate,
         end_date: endDate,
       });
+      console.log("Result ____________sales is valid", result)
+
       expect(result).toBeInstanceOf(Array);
       expect(result[0]).toHaveProperty('date', '2024-01-15');
       expect(result[0]).toHaveProperty('total_sold', 100);
@@ -47,6 +49,7 @@ describe('Sales Reports', () => {
         end_date: endDate,
         product_id: 1,
       });
+      console.log("Result product id____________sales is valid", result)
       expect(result).toBeInstanceOf(Array);
       expect(result[0].product_id).toBe(1);
     });
@@ -71,10 +74,8 @@ describe('Sales Reports', () => {
       method: 'GET',
       url: `/reports/sales?${queryParams}`,
     });
-    console.log(queryParams);
 
-    console.log('The query____', queryParams);
-
+    console.log(queryParams)
     return JSON.parse(response.body); 
 
   };

@@ -34,12 +34,14 @@ describe('Top Product Report', () => {
   describe('when the query is valid', () => {
     it('is successful without optional', async () => {
       const result = await makeRequest({ start_date: startDate, end_date: endDate });
+      console.log("Result____________top is valid", result)
       expect(result).toHaveLength(5);
       expect(result[0]).toHaveProperty('product_id', 1);
     });
 
     it('returns breakdown by date if requested', async () => {
       const result = await makeRequest({ start_date: startDate, end_date: endDate, breakdown: true});
+      console.log("Result breakdown____________top is valid", result)
       expect(result[0]).toHaveProperty('date', '2024-01-15');
     });
   });
@@ -69,7 +71,6 @@ describe('Top Product Report', () => {
       url: `/reports/sales?${queryString}`,
     });
 
-    console.log('The query____', queryString);
     return JSON.parse(response.body); 
   };
 });
