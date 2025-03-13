@@ -1,8 +1,8 @@
 import 'tests/setup';
-import server from 'src/server';
-import User from 'src/models/User';
+import server from '../../server';
+import User from '../User';
 
-describe('FETCH action', () => {
+describe('DELETE action', () => {
   describe('when the user is found', () => {
     it('is successful', async () => {
       const user = await User.query().insert({ name: 'John Doe', email: 'john.doe@email.com' });
@@ -12,19 +12,15 @@ describe('FETCH action', () => {
       expect(response.statusCode).toBe(200);
     });
 
-    it('returns the user data', async () => {
+    it('returns the user id', async () => {
+      await User.query().insert({ name: 'Jane Doe', email: 'jane.doe@email.com' });
       const user = await User.query().insert({ name: 'John Doe', email: 'john.doe@email.com' });
+      await User.query().insert({ name: 'Jack Doe', email: 'jack.doe@email.com' });
 
       const response = await makeRequest(user.id);
 
-      const json_response = response.json<User>();
-      expect(json_response).toEqual({
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        created_at: expect.any(String),
-        updated_at: expect.any(String),
-      });
+      const json_response = response.json<number>();
+      expect(json_response).toEqual(user.id);
     });
   });
 
@@ -38,6 +34,7 @@ describe('FETCH action', () => {
     });
 
     it('returns the user data', async () => {
+      await User.query().insert({ name: 'Jane Doe', email: 'jane.doe@email.com' });
       const user = await User.query().insert({ name: 'John Doe', email: 'john.doe@email.com' });
 
       const response = await makeRequest(user.id + 1);
@@ -51,7 +48,7 @@ describe('FETCH action', () => {
 
   const makeRequest = async (id: number) =>
     server.inject({
-      method: 'GET',
+      method: 'DELETE',
       url: `/users/${id}`,
     });
 });

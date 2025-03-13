@@ -1,21 +1,22 @@
-import knex from 'src/db';
+import knex from '../src/db';
 
 beforeAll(async () => {
-  await knex.migrate.latest();
+  const result = await knex.raw('SELECT current_database()');
+  console.log('Banco de dados atual:', result.rows[0].current_database);
 });
 
 beforeEach(async () => {
   const tables = await knex.raw(
-    "SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%';"
+    `SELECT tablename FROM pg_tables WHERE schemaname = \'public\';`
   );
 
-  for (const { name } of tables) {
-    await knex(name).delete();
-    await knex.raw(`DELETE FROM sqlite_sequence WHERE name='${name}'`);
+  for (const { tablename } of tables.rows) {
+    await knex.raw(`TRUNCATE TABLE ${tablename} RESTART IDENTITY CASCADE`);
   }
+
+  await knex.seed.run();
 });
 
 afterAll(async () => {
   await knex.destroy();
 });
-

@@ -3,19 +3,31 @@ import { OrderData, OrderItemData } from '../interfaces/orders';
 import { Order, OrderItem, OrderStatus, Product } from '../models';
 
 export async function createOrder(data: OrderData) {
+interface OrderItemData {
+  product_id: number;
+  quantity: number;
+  discount?: number;
+}
+
+interface OrderData {
+  id?: number;
+  customer_id: number;
+  items: OrderItemData[];
+}
+
   const { customer_id, items } = data;
 
   const trx = await Order.startTransaction();
-
-  try {
+    
+    try {
     const productPrices = await getProductPrices(items, trx);
     const totalPaid = calculateTotalPaid(items, productPrices);
     const totalDiscount = calculateTotalDiscound(items);
 
     const order = await Order.query(trx).insert({
       customer_id,
-      total_paid: totalPaid as number,
-      total_discount: totalDiscount as number,
+      total_paid: totalPaid,
+      total_discount: totalDiscount,
       total_shipping: 0,
       total_tax: 0,
       status: OrderStatus.PaymentPending,
@@ -42,6 +54,22 @@ export async function updateOrder(data: OrderData) {
     if (!order) throw new Error('Order not found. Please, create a new order.');
     if (order.status !== OrderStatus.PaymentPending)
       throw new Error('Only pending payments can be modified.');
+
+    await OrderItem.query(trx).where('order_id', id).delete();
+
+    if (items.length < 1) {
+      order = await Order.query(trx).patchAndFetchById(id, {
+        customer_id,
+        total_paid: 0,
+        total_discount: 0,
+        total_shipping: 0,
+        total_tax: 0,
+        status: order.status,
+      });
+      await trx.commit();
+      return order;
+    }
+
     const productPrices = await getProductPrices(items, trx);
     const totalPaid = calculateTotalPaid(items, productPrices);
     const totalDiscount = calculateTotalDiscound(items);
@@ -75,7 +103,8 @@ async function insertOrderItems(
   items: OrderItemData[],
   productPrices: Map<number, number>,
   trx: Transaction
-) {
+
+): Promise<void> {
   const orderItems = items.map((item) => ({
     order_id: orderId,
     product_id: item.product_id,
@@ -89,14 +118,14 @@ async function insertOrderItems(
   await OrderItem.query(trx).insert(orderItems);
 }
 
-function calculateTotalDiscound(items: OrderItemData[]) {
+function calculateTotalDiscound(items: OrderItemData[]): number {
   return items.reduce((sum, item) => sum + (item.discount || 0), 0);
 }
 
 function calculateTotalPaid(
   items: OrderItemData[],
   productPrices: Map<number, number>
-) {
+): number {
   const totalDiscount = calculateTotalDiscound(items);
   return (
     items.reduce((sum, { product_id, quantity }) => {
@@ -106,7 +135,7 @@ function calculateTotalPaid(
   );
 }
 
-async function getProductPrices(items: OrderItemData[], trx: Transaction) {
+async function getProductPrices(items: OrderItemData[], trx: Transaction): Promise<Map<number, number>> {
   const productsId = items.map((item) => item.product_id);
   const productPrices = new Map(
     (
