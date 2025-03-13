@@ -113,7 +113,7 @@ describe('CREATE action', () => {
   
     it('updates an existing order successfully', async () => {
       const response = await makeRequest(updateInput);
-      expect(response.statusCode).toBe(200);
+      expect(response.statusCode).toBe(201);
   
       const updatedOrder = await Order.query().findById(updateInput.id);
       expect(updatedOrder?.customer_id).toBe(updateInput.customer_id);
@@ -135,19 +135,11 @@ describe('CREATE action', () => {
   
     it('removes all items when items array is empty', async () => {
       const response = await makeRequest({ ...updateInput, items: [] });
-      expect(response.statusCode).toBe(200);
+      expect(response.statusCode).toBe(201);
   
       const updatedItems = await OrderItem.query().where('order_id', updateInput.id);
       expect(updatedItems.length).toBe(0);
     });
-  
-    const makeRequest = async (input: OrderInput) => {
-      return await server.inject({
-        method: 'PUT',
-        url: '/orders',
-        body: input,
-      });
-    };
   });
 
   const makeRequest = async (input: OrderInput) => {
