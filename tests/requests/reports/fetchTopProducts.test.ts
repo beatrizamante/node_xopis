@@ -29,7 +29,7 @@ describe('Top Product Report', () => {
 
   describe('when the query is valid', () => {
     it('is successful without optional', async () => {
-      const result = await getTopProductReport(startDate, endDate);
+      const result = await getTopProductReport({ start_date: startDate, end_date: endDate });
       expect(result).toHaveLength(5);
       expect(result[0]).toHaveProperty('product_id', 1);
     });
@@ -37,7 +37,7 @@ describe('Top Product Report', () => {
     it('is successful with optional', () => {
       it('is successful without optional', async () => {
         const breakdown: boolean = true;
-        const result = await getTopProductReport(startDate, endDate, breakdown);
+        const result = await getTopProductReport({ start_date: startDate, end_date: endDate, breakdown: breakdown});
         expect(result).toHaveLength(5);
         expect(result[0]).toHaveProperty('product_id', 1);
       });
@@ -46,12 +46,12 @@ describe('Top Product Report', () => {
 
   describe('when the query is invalid', () => {
     it('returns breakdown by date if requested', async () => {
-      const result = await getTopProductReport(startDate, endDate, true);
+      const result = await getTopProductReport({ start_date: startDate, end_date: endDate, breakdown: true});
       expect(result[0]).toHaveProperty('date', '2024-01-15');
     });
 
     it('throws an error if dates are missing', async () => {
-      await expect(getTopProductReport('', endDate)).rejects.toThrow(
+      await expect(getTopProductReport({ start_date: '', end_date: endDate})).rejects.toThrow(
         'All dates must be filled.'
       );
     });
