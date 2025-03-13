@@ -1,11 +1,10 @@
 import 'tests/setup';
 import server from '../../../src/server';
-import { getSalesReports } from '../../../src/services/reportServices';
 
-interface OrderInput {
-  id?: number;
-  customer_id?: number;
-  items?: { product_id: number; quantity: number; discount?: number }[];
+interface ReportInput {
+  start_date: string,
+  end_date: string,
+  product_id?: number  
 }
 
 const today = new Date().toISOString().split('T')[0];
@@ -23,28 +22,32 @@ describe('Sales Reports', () => {
         ],
       };
 
-      await makeRequest(order);
+      await server.inject({
+        method: 'POST',
+        url: '/orders',
+        body: order,
+      });
     }
   });
 
   describe('when valid queries', () => {
     it('returns sales report for a given date range', async () => {
-      const result = await getSalesReports({
+      const result = await makeRequest({
         start_date: startDate,
         end_date: endDate,
       });
-      expect(result).toHaveLength(1);
+      expect(result).toBeInstanceOf(Array);
       expect(result[0]).toHaveProperty('date', '2024-01-15');
       expect(result[0]).toHaveProperty('total_sold', 100);
     });
 
     it('returns filtered report for a specific product', async () => {
-      const result = await getSalesReports({
+      const result = await makeRequest({
         start_date: startDate,
         end_date: endDate,
         product_id: 1,
       });
-      expect(result).toHaveLength(1);
+      expect(result).toBeInstanceOf(Array);
       expect(result[0].product_id).toBe(1);
     });
   });
@@ -52,18 +55,27 @@ describe('Sales Reports', () => {
   describe('when invalid queries', () => {
     it('throws an error if dates are missing', async () => {
       await expect(
-        getSalesReports({ start_date: '', end_date: endDate })
+        makeRequest({ start_date: '', end_date: endDate })
       ).rejects.toThrow('All dates must be filled.');
     });
   });
 
-  const makeRequest = async (input: OrderInput) => {
+  const makeRequest = async (input: ReportInput) => {
+    const queryParams = new URLSearchParams({
+      start_date: input.start_date,
+      end_date: input.end_date,
+      product_id: input.product_id !== undefined ? String(input.product_id) : '',
+    }).toString();
+
     const response = await server.inject({
       method: 'GET',
-      url: '/sales',
-      body: input,
+      url: `/reports/sales?${queryParams}`,
     });
-    console.log(response.statusCode, response.body);
-    return response;
+    console.log(queryParams);
+
+    console.log('The query____', queryParams);
+
+    return JSON.parse(response.body); 
+
   };
 });
