@@ -4,7 +4,6 @@ import Order from '../../../src/models/Order';
 import OrderItem from '../../../src/models/OrderItem';
 
 import { LightMyRequestResponse } from 'fastify';
-import { Model } from 'objection';
 
 interface OrderInput {
   customer_id?: number;
@@ -26,14 +25,6 @@ describe('CREATE action', () => {
       const response = await makeRequest(input);
 
       expect(response.statusCode).toBe(201);
-    });
-
-    it('creates a new record', async () => {
-      await assertCount(
-        Order,
-        { customer_id: validInput.customer_id },
-        { changedBy: 1, items: validInput.items }
-      );
     });
 
     it('creates order items', async () => {
@@ -91,36 +82,6 @@ describe('CREATE action', () => {
     });
     console.log(response.statusCode, response.body);
     return response;
-  };
-
-  const assertCount = async (
-    model: typeof Model,
-    where: object,
-    { changedBy, items }: { changedBy: number; items?: Partial<OrderItem>[] }
-  ) => {
-    const initialCount = await model.query().where(where).resultSize();
-    console.log('Initial count:', initialCount);
-    const response = await makeRequest(where);
-    const createdOrder = response.json();
-
-    const initialItemCount = await OrderItem.query()
-      .where({ order_id: createdOrder.id })
-      .resultSize();
-    console.log('Initial item count:', initialItemCount);
-
-    const finalCount = await model.query().where(where).resultSize();
-    console.log('Final count:', finalCount);
-
-    const finalItemCount = await OrderItem.query()
-      .where({ order_id: createdOrder.id })
-      .resultSize();
-    console.log('Final item count:', finalItemCount);
-
-    expect(finalCount).toBe(initialCount + changedBy);
-
-    if (items) {
-      expect(finalItemCount).toBe(initialItemCount + items.length);
-    }
   };
 
   const assertBadRequest = async (

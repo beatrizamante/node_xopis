@@ -1,4 +1,4 @@
-import { CouldNotCreate, ERROR_CODES } from '../errors/errors';
+import { Transaction } from 'objection';
 import { Order, OrderItem, OrderStatus, Product } from '../models';
 
 interface OrderItemData {
@@ -45,7 +45,7 @@ async function insertOrderItems(
   orderId: number,
   items: OrderItemData[],
   productPrices: Map<number, number>,
-  trx: any
+  trx: Transaction
 ): Promise<void> {
   const orderItems = items.map((item) => ({
     order_id: orderId,
@@ -77,7 +77,7 @@ function calculateTotalPaid(
   );
 }
 
-async function getProductPrices(items: OrderItemData[], trx: any): Promise<Map<number, number>> {
+async function getProductPrices(items: OrderItemData[], trx: Transaction): Promise<Map<number, number>> {
   const productsId = items.map((item) => item.product_id);
   const productPrices = new Map(
     (
