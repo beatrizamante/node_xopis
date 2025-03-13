@@ -15,7 +15,7 @@ export class BaseError extends Error {
   }
 }
 
-export class CouldNotCreateErrorError extends BaseError {}
+export class CouldNotCreateError extends BaseError {}
 
 export class InternalServerError extends BaseError {}
 

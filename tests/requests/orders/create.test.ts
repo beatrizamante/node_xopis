@@ -79,9 +79,11 @@ describe('CREATE action', () => {
     const existingOrder = {
       id: 1,
       customer_id: 1,
-      status: OrderStatus.PaymentPending,
       total_paid: 100,
       total_discount: 10,
+      total_shipping: 0,
+      total_tax: 0,
+      status: OrderStatus.PaymentPending,
     };
   
     const updateInput = {
@@ -93,8 +95,20 @@ describe('CREATE action', () => {
     beforeEach(async () => {
       await Order.query().insert(existingOrder);
       await OrderItem.query().insert([
-        { order_id: 1, product_id: 1, quantity: 2 },
+        {
+          order_id: 1,
+          product_id: 1,
+          quantity: 2,
+          tax: 0, 
+          shipping: 0,
+          discount: 0,
+          paid: 20,
+        },
       ]);
+
+      console.log('updateInput.id:', updateInput.id);
+      console.log('Existing order ID:', existingOrder.id);
+
     });
   
     it('updates an existing order successfully', async () => {
