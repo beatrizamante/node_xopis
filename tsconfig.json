@@ -15,5 +15,9 @@
   },
   "include": [
     "src/**/*"
+<<<<<<< Updated upstream
   ]
+=======
+, "src/temp_tests/users", "src/temp_tests/products"  ]
+>>>>>>> Stashed changes
 }
