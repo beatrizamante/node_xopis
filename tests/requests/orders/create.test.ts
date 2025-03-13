@@ -12,15 +12,6 @@ interface OrderInput {
   items?: { product_id: number; quantity: number; discount?: number }[];
 }
 
-jest.mock('../models');
-jest.mock('../services/orderService', () => ({
-  ...jest.requireActual('../services/orderService'),
-  getProductPrices: jest.fn(),
-  calculateTotalPaid: jest.fn(),
-  calculateTotalDiscound: jest.fn(),
-  insertOrderItems: jest.fn(),
-}));
-
 describe('CREATE action', () => {
   const validInput = {
     customer_id: 1,
