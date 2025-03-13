@@ -1,16 +1,6 @@
+import { Transaction } from 'objection';
+import { OrderData, OrderItemData } from '../interfaces/orders';
 import { Order, OrderItem, OrderStatus, Product } from '../models';
-
-interface OrderItemData {
-  product_id: number;
-  quantity: number;
-  discount?: number;
-}
-
-interface OrderData {
-  id?: number;
-  customer_id: number;
-  items: OrderItemData[];
-}
 
 export async function createOrder(data: OrderData) {
   const { customer_id, items } = data;
@@ -84,7 +74,7 @@ async function insertOrderItems(
   orderId: number,
   items: OrderItemData[],
   productPrices: Map<number, number>,
-  trx: any
+  trx: Transaction
 ) {
   const orderItems = items.map((item) => ({
     order_id: orderId,
@@ -116,7 +106,7 @@ function calculateTotalPaid(
   );
 }
 
-async function getProductPrices(items: OrderItemData[], trx: any) {
+async function getProductPrices(items: OrderItemData[], trx: Transaction) {
   const productsId = items.map((item) => item.product_id);
   const productPrices = new Map(
     (

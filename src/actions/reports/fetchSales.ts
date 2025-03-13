@@ -6,7 +6,7 @@ type RequestSales = FastifyRequest<{
     Querystring: {
       start_date: string;
       end_date: string;
-      product_id?: string;
+      product_id?: number;
     };
   }>;
 
@@ -15,7 +15,7 @@ type RequestSales = FastifyRequest<{
     reply: FastifyReply
 ) => {
     try {
-        const salesData = await getSalesReports(start_date, end_date, product_id ? parseInt(product_id) : undefined);
+        const salesData = await getSalesReports({ start_date, end_date, product_id });
 
         const serializedDate = serializerSalesReport(salesData);
 
