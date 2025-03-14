@@ -26,6 +26,9 @@ export async function getSalesReports({
       'All dates must be filled.'
     );
 
+  const startOfDay = `${start_date} 00:00:00`;
+  const endOfDay = `${end_date} 23:59:59`;
+
   const query = OrderItem.query()
     .select([
       raw('DATE(orders.created_at) as date'),
@@ -33,7 +36,7 @@ export async function getSalesReports({
       raw('SUM(orders_items.paid) as total_sold'),
     ])
     .join('orders', 'orders.id', 'orders_items.order_id')
-    .whereBetween('orders.created_at', [start_date, end_date])
+    .whereBetween('orders.created_at', [startOfDay, endOfDay])
     .groupBy('date', 'orders_items.product_id')
     .orderBy('date', 'asc');
   if (product_id) {
@@ -54,13 +57,16 @@ export async function getTopProductReport({
       'All dates must be filled.'
     );
 
+  const startOfDay = `${start_date} 00:00:00`;
+  const endOfDay = `${end_date} 23:59:59`;
+
   const query = OrderItem.query()
     .select([
       'orders_items.product_id',
       raw('COUNT(orders_items.order_id) as total_purchases'),
     ])
     .join('orders', 'orders.id', 'orders_items.order_id')
-    .whereBetween('orders.created_at', [start_date, end_date])
+    .whereBetween('orders.created_at', [startOfDay, endOfDay])
     .groupBy('orders_items.product_id')
     .orderBy('total_purchases', 'desc');
 
