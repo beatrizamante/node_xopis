@@ -8,7 +8,7 @@
     "dev": "tsx src/index.ts",
     "build": "tsc -p tsconfig.json",
     "startJS": "node index.js",
-    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest",
+    "test": "NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules jest --runInBand",
     "lint": "eslint .",
     "db:setup": "tsx node_modules/.bin/knex migrate:latest && tsx node_modules/.bin/knex seed:run",
     "db:setup:test": "NODE_ENV=test tsx ./node_modules/.bin/knex migrate:latest && tsx ./node_modules/.bin/knex seed:run",

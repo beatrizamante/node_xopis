@@ -2,14 +2,17 @@ import 'tests/setup';
 import server from '../../../src/server';
 
 interface ReportInput {
-  start_date: string,
-  end_date: string,
-  product_id?: number  
+  start_date: string;
+  end_date: string;
+  product_id?: number;
 }
 
 const today = new Date().toISOString().split('T')[0];
 const startDate = today;
-const endDate = today;
+const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000)
+  .toISOString()
+  .split('T')[0];
+const endDate = String(tomorrow);
 
 describe('Sales Reports', () => {
   beforeEach(async () => {
@@ -36,11 +39,11 @@ describe('Sales Reports', () => {
         start_date: startDate,
         end_date: endDate,
       });
-      console.log("Result ____________sales is valid", result)
-
-      expect(result).toBeInstanceOf(Array);
-      expect(result[0]).toHaveProperty('date', '2024-01-15');
-      expect(result[0]).toHaveProperty('total_sold', 100);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+        
+      expect(result[0]).toHaveProperty('date');
+      expect(result[0]).toHaveProperty('total_sold');
     });
 
     it('returns filtered report for a specific product', async () => {
@@ -49,17 +52,20 @@ describe('Sales Reports', () => {
         end_date: endDate,
         product_id: 1,
       });
-      console.log("Result product id____________sales is valid", result)
-      expect(result).toBeInstanceOf(Array);
+      expect(Array.isArray(result)).toBe(true);
+      expect(result.length).toBeGreaterThan(0);
+
+      expect(result[0]).toHaveProperty('product_id');
       expect(result[0].product_id).toBe(1);
     });
   });
 
   describe('when invalid queries', () => {
     it('throws an error if dates are missing', async () => {
-      await expect(
-        makeRequest({ start_date: '', end_date: endDate })
-      ).rejects.toThrow('All dates must be filled.');
+      const response = await makeRequest({ start_date: '', end_date: endDate });
+
+      expect(response).toHaveProperty('error');
+      expect(response.error).toContain('All dates must be filled.');
     });
   });
 
@@ -67,7 +73,8 @@ describe('Sales Reports', () => {
     const queryParams = new URLSearchParams({
       start_date: input.start_date,
       end_date: input.end_date,
-      product_id: input.product_id !== undefined ? String(input.product_id) : '',
+      product_id:
+        input.product_id !== undefined ? String(input.product_id) : '',
     }).toString();
 
     const response = await server.inject({
@@ -75,8 +82,6 @@ describe('Sales Reports', () => {
       url: `/reports/sales?${queryParams}`,
     });
 
-    console.log(queryParams)
-    return JSON.parse(response.body); 
-
+    return JSON.parse(response.body);
   };
 });

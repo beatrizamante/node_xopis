@@ -36,7 +36,6 @@ export async function getSalesReports({
     .whereBetween('orders.created_at', [start_date, end_date])
     .groupBy('date', 'orders_items.product_id')
     .orderBy('date', 'asc');
-
   if (product_id) {
     query.where('orders_items.product_id', product_id);
   }

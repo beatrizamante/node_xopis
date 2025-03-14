@@ -34,23 +34,24 @@ describe('Top Product Report', () => {
   describe('when the query is valid', () => {
     it('is successful without optional', async () => {
       const result = await makeRequest({ start_date: startDate, end_date: endDate });
-      console.log("Result____________top is valid", result)
       expect(result).toHaveLength(5);
       expect(result[0]).toHaveProperty('product_id', 1);
     });
 
     it('returns breakdown by date if requested', async () => {
       const result = await makeRequest({ start_date: startDate, end_date: endDate, breakdown: true});
-      console.log("Result breakdown____________top is valid", result)
       expect(result[0]).toHaveProperty('date', '2024-01-15');
     });
   });
 
-  describe('when the query is invalid', () => {
+  describe('when invalid queries', () => {
     it('throws an error if dates are missing', async () => {
-      await expect(makeRequest({ start_date: '', end_date: endDate})).rejects.toThrow(
-        'All dates must be filled.'
-      );
+      const response = await makeRequest({ start_date: '', end_date: endDate });
+
+      console.log('Response error:', response);
+
+      expect(response).toHaveProperty('error');
+      expect(response.error).toContain('All dates must be filled.');
     });
   });
 
