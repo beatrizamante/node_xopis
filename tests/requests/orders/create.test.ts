@@ -105,10 +105,6 @@ describe('CREATE action', () => {
           paid: 20,
         },
       ]);
-
-      console.log('updateInput.id:', updateInput.id);
-      console.log('Existing order ID:', existingOrder.id);
-
     });
   
     it('updates an existing order successfully', async () => {
@@ -148,7 +144,6 @@ describe('CREATE action', () => {
       url: '/orders',
       body: input,
     });
-    console.log(response.statusCode, response.body);
     return response;
   };
 
