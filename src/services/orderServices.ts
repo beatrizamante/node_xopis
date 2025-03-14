@@ -41,6 +41,62 @@ export async function createOrder(data: OrderData): Promise<Order> {
   }
 }
 
+export async function updateOrder(data: OrderData) {
+  const { id, customer_id, items } = data;
+  if (!id) throw new Error('Order ID is required for update.');
+
+  const trx = await Order.startTransaction();
+
+  try {
+    let order = await Order.query(trx).findById(id);
+
+    if (!order) throw new Error('Order not found. Please, create a new order.');
+    if (order.status !== OrderStatus.PaymentPending)
+      throw new Error('Only pending payments can be modified.');
+
+    await OrderItem.query(trx).where('order_id', id).delete();
+
+    if (items.length < 1) {
+      order = await Order.query(trx).patchAndFetchById(id, {
+        customer_id,
+        total_paid: 0,
+        total_discount: 0,
+        total_shipping: 0,
+        total_tax: 0,
+        status: order.status,
+      });
+      await trx.commit();
+      return order;
+    }
+
+    const productPrices = await getProductPrices(items, trx);
+    const totalPaid = calculateTotalPaid(items, productPrices);
+    const totalDiscount = calculateTotalDiscound(items);
+
+    order = await Order.query(trx).patchAndFetchById(id, {
+      customer_id,
+      total_paid: totalPaid as number,
+      total_discount: totalDiscount as number,
+      total_shipping: 0,
+      total_tax: 0,
+      status: order.status,
+    });
+
+    await OrderItem.query(trx).where('order_id', id).delete();
+    await insertOrderItems(order.id, items, productPrices, trx);
+
+    await trx.commit();
+    return order;
+  } catch (error) {
+    await trx.rollback();
+    throw error;
+  }
+}
+
+export async function upsertOrder(data: OrderData) {
+  return data.id ? updateOrder(data) : createOrder(data);
+}
+
 async function insertOrderItems(
   orderId: number,
   items: OrderItemData[],

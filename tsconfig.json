@@ -14,10 +14,7 @@
     "jsx": "react"
   },
   "include": [
-    "src/**/*"
-<<<<<<< Updated upstream
+    "src/**/*",
+    "tests/requests/users", "tests/requests/products"  ]
   ]
-=======
-, "src/temp_tests/users", "src/temp_tests/products"  ]
->>>>>>> Stashed changes
 }
