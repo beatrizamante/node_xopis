@@ -1,19 +1,8 @@
 import { Transaction } from 'objection';
+import { OrderData, OrderItemData } from '../interfaces/orders';
 import { Order, OrderItem, OrderStatus, Product } from '../models';
 
-interface OrderItemData {
-  product_id: number;
-  quantity: number;
-  discount?: number;
-}
-
-interface OrderData {
-  id?: number;
-  customer_id: number;
-  items: OrderItemData[];
-}
-
-export async function createOrder(data: OrderData): Promise<Order> {
+export async function createOrder(data: OrderData) {
   const { customer_id, items } = data;
 
   const trx = await Order.startTransaction();
