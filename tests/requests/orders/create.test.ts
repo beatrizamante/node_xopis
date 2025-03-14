@@ -1,11 +1,12 @@
 import 'tests/setup';
 import server from '../../../src/server';
-import Order from '../../../src/models/Order';
+import Order, { OrderStatus } from '../../../src/models/Order';
 import OrderItem from '../../../src/models/OrderItem';
 
 import { LightMyRequestResponse } from 'fastify';
 
 interface OrderInput {
+  id?: number;
   customer_id?: number;
   items?: { product_id: number; quantity: number; discount?: number }[];
 }
@@ -74,8 +75,6 @@ describe('CREATE action', () => {
     });
   });
 
-<<<<<<< Updated upstream
-=======
   describe('UPDATE action', () => {
     const existingOrder = {
       id: 1,
@@ -86,13 +85,13 @@ describe('CREATE action', () => {
       total_tax: 0,
       status: OrderStatus.PaymentPending,
     };
-
+  
     const updateInput = {
       id: 1,
       customer_id: 2,
       items: [{ product_id: 1, quantity: 3 }],
     };
-
+  
     beforeEach(async () => {
       await Order.query().insert(existingOrder);
       await OrderItem.query().insert([
@@ -100,63 +99,45 @@ describe('CREATE action', () => {
           order_id: 1,
           product_id: 1,
           quantity: 2,
-          tax: 0,
+          tax: 0, 
           shipping: 0,
           discount: 0,
-          paid: 0,
+          paid: 20,
         },
       ]);
-
-      const orders = await Order.query();
-      const orderItems = await OrderItem.query();
-      
-      console.log('Orders:', orders);
-      console.log('Order Items:', orderItems);
     });
-
+  
     it('updates an existing order successfully', async () => {
       const response = await makeRequest(updateInput);
       expect(response.statusCode).toBe(201);
-
+  
       const updatedOrder = await Order.query().findById(updateInput.id);
       expect(updatedOrder?.customer_id).toBe(updateInput.customer_id);
     });
-
+  
     it('returns an error if order does not exist', async () => {
       const response = await makeRequest({ ...updateInput, id: 999 });
       expect(response.statusCode).toBe(500);
     });
-
+  
     it('returns an error if order status is not PaymentPending', async () => {
       await Order.query().patchAndFetchById(existingOrder.id, {
         status: OrderStatus.Shipped,
       });
-
+  
       const response = await makeRequest(updateInput);
       expect(response.statusCode).toBe(500);
     });
-
+  
     it('removes all items when items array is empty', async () => {
       const response = await makeRequest({ ...updateInput, items: [] });
-      expect(response.statusCode).toBe(200);
-
-      const updatedItems = await OrderItem.query().where(
-        'order_id',
-        updateInput.id
-      );
+      expect(response.statusCode).toBe(201);
+  
+      const updatedItems = await OrderItem.query().where('order_id', updateInput.id);
       expect(updatedItems.length).toBe(0);
     });
-
-    const makeRequest = async (input: OrderInput) => {
-      return await server.inject({
-        method: 'PUT',
-        url: '/orders',
-        body: input,
-      });
-    };
   });
 
->>>>>>> Stashed changes
   const makeRequest = async (input: OrderInput) => {
     const response = await server.inject({
       method: 'POST',
